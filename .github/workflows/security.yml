@@ -46,3 +46,11 @@ jobs:
         with:
           name: report
           path: output/
+
+      - name: Check grade
+        run: |
+          GRADE=$(cat output/*.json | python -c "import sys, json; print(json.load(sys.stdin)['summary']['grade'])")
+          echo "Grade: $GRADE"
+          if [[ "$GRADE" == "D" || "$GRADE" == "F" ]]; then
+            exit 1
+          fi
