@@ -1,0 +1,51 @@
+name: Saleor Security Scan
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Start Saleor stack
+        run: docker compose up -d
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for Saleor..."
+          for i in {1..60}; do
+            if curl -s http://localhost:8000/graphql/ > /dev/null; then
+              echo "Saleor is up!"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Clone scanner
+        run: git clone https://github.com/Kladaja/security_scanner.git
+
+      - name: Install dependencies
+        run: pip install -r security_scanner/requirements.txt
+
+      - name: Run scan
+        run: |
+          python security_scanner/main.py scan \
+            -t http://localhost:8000 \
+            -y --no-bruteforce \
+            -o json --output-dir output
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: output/
