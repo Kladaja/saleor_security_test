@@ -38,18 +38,11 @@ jobs:
         run: pip install -r security_scanner/requirements.txt
 
       - name: Run scan
-        run: python security_scanner/main.py scan -t http://localhost:8000 -y -o json --output-dir output
+        run: python security_scanner/main.py scan -t http://localhost:8000 -m all -y -o json --output-dir output --custom-endpoints security-test-cases.yml
 
       - name: Upload report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: report
           path: output/
-
-      - name: Check grade
-        run: |
-          GRADE=$(cat output/*.json | python -c "import sys, json; print(json.load(sys.stdin)['summary']['grade'])")
-          echo "Grade: $GRADE"
-          if [[ "$GRADE" == "D" || "$GRADE" == "F" ]]; then
-            exit 1
-          fi

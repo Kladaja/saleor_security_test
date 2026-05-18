@@ -1,0 +1,19 @@
+injection:
+  endpoints:
+    - path: /graphql/
+      method: GET
+      params:
+        query: "{ shop { name } }"
+
+    - path: /graphql/
+      method: GET
+      params:
+        query: "{ products(first: 1) { edges { node { id name } } } }"
+
+    - path: /graphql/
+      method: GET
+      params:
+        query: "{ categories(first: 1) { edges { node { id name } } } }"
+
+auth:
+  login_endpoints: []
